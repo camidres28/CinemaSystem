@@ -15,7 +15,7 @@ namespace CinemaSystem.Services.StorageServices
         {
             this.connectionString = configuration.GetConnectionString("AzureStorage");
         }
-        public async Task DeleteFile(string path, string container)
+        public async Task DeleteFileAsync(string path, string container)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -29,18 +29,16 @@ namespace CinemaSystem.Services.StorageServices
             await blob.DeleteIfExistsAsync();
         }
 
-        public async Task<string> EditFile(byte[] content, string path, string extension, string container, string contentType)
+        public async Task<string> EditFileAsync(byte[] content, string path, string extension, string container, string contentType)
         {
-            await this.DeleteFile(path, container);
-            string uri = await this.SaveFile(content, extension, container, contentType);
+            await this.DeleteFileAsync(path, container);
+            string uri = await this.SaveFileAsync(content, extension, container, contentType);
 
             return uri;
         }
 
-        public async Task<string> SaveFile(byte[] content, string extension, string container, string contentType)
+        public async Task<string> SaveFileAsync(byte[] content, string extension, string container, string contentType)
         {
-            string uri = string.Empty;
-
             BlobContainerClient client = new(this.connectionString, container);
             await client.CreateIfNotExistsAsync();
             client.SetAccessPolicy(PublicAccessType.Blob);
@@ -54,8 +52,7 @@ namespace CinemaSystem.Services.StorageServices
             BinaryData binaryData = new(content);
             await blob.UploadAsync(binaryData, blobUploadOptions);
 
-            uri = blob.Uri.ToString();
-
+            string uri = blob.Uri.ToString();
             return uri;
         }
     }

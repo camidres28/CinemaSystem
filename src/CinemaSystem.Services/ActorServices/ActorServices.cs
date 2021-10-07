@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Actors;
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.StorageServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CinemaSystem.Services.ExtensionsServices;
 
 namespace CinemaSystem.Services.ActorServices
 {
@@ -19,7 +22,7 @@ namespace CinemaSystem.Services.ActorServices
         private readonly ApplicationDbContext context;
         private readonly IFileStorageServices fileStorage;
 
-        public ActorServices(IMapper mapper, ApplicationDbContext context, 
+        public ActorServices(IMapper mapper, ApplicationDbContext context,
             IFileStorageServices fileStorage)
         {
             this.mapper = mapper;
@@ -36,7 +39,8 @@ namespace CinemaSystem.Services.ActorServices
                 await dto.Photo.CopyToAsync(stream);
                 byte[] content = stream.ToArray();
                 string extension = Path.GetExtension(dto.Photo.FileName);
-                string uri = await this.fileStorage.SaveFile(content, extension, this.container, dto.Photo.ContentType);
+                string uri = await this.fileStorage.SaveFileAsync(content, extension, 
+                    this.container, dto.Photo.ContentType);
                 entity.PhotoUrl = uri;
             }
 
@@ -58,9 +62,11 @@ namespace CinemaSystem.Services.ActorServices
             }
         }
 
-        public async Task<IEnumerable<ActorDto>> GetAllAsync()
+        public async Task<IEnumerable<ActorDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
         {
-            IEnumerable<Actor> entities = await this.context.Actors.ToListAsync();
+            IQueryable<Actor> queryable = this.context.Actors.AsQueryable();
+            await httpContext.InsertPaginationParameters(queryable, paginationDto.RegistersPerPageQuantity);
+            IEnumerable<Actor> entities = await queryable.Paginate(paginationDto).ToListAsync();
             IEnumerable<ActorDto> dtos = this.mapper.Map<IEnumerable<ActorDto>>(entities);
 
             return dtos;
@@ -90,7 +96,7 @@ namespace CinemaSystem.Services.ActorServices
                     await dto.Photo.CopyToAsync(stream);
                     byte[] content = stream.ToArray();
                     string extension = Path.GetExtension(dto.Photo.FileName);
-                    string uri = await this.fileStorage.EditFile(content, entity.PhotoUrl, extension, this.container, dto.Photo.ContentType);
+                    string uri = await this.fileStorage.EditFileAsync(content, entity.PhotoUrl, extension, this.container, dto.Photo.ContentType);
                     entity.PhotoUrl = uri;
                 }
                 //this.context.Entry(entity).State = EntityState.Modified;
@@ -100,3 +106,4 @@ namespace CinemaSystem.Services.ActorServices
         }
     }
 }
+

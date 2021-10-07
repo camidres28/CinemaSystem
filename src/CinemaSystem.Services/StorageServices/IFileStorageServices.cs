@@ -4,11 +4,11 @@ namespace CinemaSystem.Services.StorageServices
 {
     public interface IFileStorageServices
     {
-        Task<string> SaveFile(byte[] content, string extension,
+        Task<string> SaveFileAsync(byte[] content, string extension,
             string container, string contentType);
 
-        Task<string> EditFile(byte[] content, string path, 
+        Task<string> EditFileAsync(byte[] content, string path, 
             string extension, string container, string contentType);
-        Task DeleteFile(string path, string container);
+        Task DeleteFileAsync(string path, string container);
     }
 }

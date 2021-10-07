@@ -1,6 +1,7 @@
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.ActorServices;
 using CinemaSystem.Services.GenreServices;
+using CinemaSystem.Services.MovieServices;
 using CinemaSystem.Services.StorageServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +24,7 @@ namespace CinemaSystem.WebApi
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            Configuration = configuration; 
         }
 
         public IConfiguration Configuration { get; }
@@ -33,11 +34,12 @@ namespace CinemaSystem.WebApi
         {
             services.AddScoped<IGenreServices, GenreServices>();
             services.AddScoped<IActorServices, ActorServices>();
-            services.AddScoped<IFileStorageServices, AzureFileStorageServices>();
+            services.AddScoped<IMovieServices, MovieServices>();
+            services.AddTransient<IFileStorageServices, AzureFileStorageServices>();
             services.AddAutoMapper(typeof(Services.MappersServices.AutoMapperProfileServices));
             services.AddDbContext<ApplicationDbContext>(
                 options => options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CinemaSystem.WebApi", Version = "v1" });

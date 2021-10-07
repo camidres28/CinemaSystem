@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Genres;
 using CinemaSystem.Models.Entities;
+using CinemaSystem.Services.ExtensionsServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -42,9 +45,11 @@ namespace CinemaSystem.Services.GenreServices
             }
         }
 
-        public async Task<IEnumerable<GenreDto>> GetAllAsync()
+        public async Task<IEnumerable<GenreDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
         {
-            IEnumerable<Genre> genres = await this.context.Genres.ToListAsync();
+            IQueryable<Genre> queryable = this.context.Genres.AsQueryable();
+            await httpContext.InsertPaginationParameters(queryable, paginationDto.RegistersPerPageQuantity);
+            IEnumerable<Genre> genres = await queryable.Paginate(paginationDto).ToListAsync();
             IEnumerable<GenreDto> dtos = this.mapper.Map<IEnumerable<GenreDto>>(genres);
 
             return dtos;
@@ -66,7 +71,6 @@ namespace CinemaSystem.Services.GenreServices
                 Genre entity = this.mapper.Map<Genre>(dto);
                 entity.Id = id;
                 this.context.Entry(entity).State = EntityState.Modified;
-                //this.context.Genres.Update(entity);
                 await this.context.SaveChangesAsync();
             }            
         }

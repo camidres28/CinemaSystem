@@ -10,7 +10,7 @@ namespace CinemaSystem.Models.Entities
         [StringLength(120)]
         public string Name { get; set; }
         [Required]
-        public DateTime BirthDay { get; set; }
+        public DateTimeOffset BirthDay { get; set; }
         public string PhotoUrl { get; set; }
     }
 }

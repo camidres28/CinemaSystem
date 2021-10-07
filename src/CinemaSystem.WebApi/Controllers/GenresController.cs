@@ -1,4 +1,5 @@
-﻿using CinemaSystem.Models.DTOs.Genres;
+﻿using CinemaSystem.Models.DTOs;
+using CinemaSystem.Models.DTOs.Genres;
 using CinemaSystem.Services.GenreServices;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -23,12 +24,12 @@ namespace CinemaSystem.WebApi.Controllers
 
         // GET: api/<GenresController>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GenreDto>>> Get()
+        public async Task<ActionResult<IEnumerable<GenreDto>>> Get([FromQuery] PaginationDto paginationDto)
         {
-            IEnumerable<GenreDto> genres = await this.genreServices.GetAllAsync();
-            if (genres.Any())
+            IEnumerable<GenreDto> dtos = await this.genreServices.GetAllAsync(this.HttpContext, paginationDto);
+            if (dtos.Any())
             {
-                return Ok(genres);
+                return Ok(dtos);
             }
 
             return NoContent();

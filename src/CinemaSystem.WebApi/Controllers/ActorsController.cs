@@ -1,6 +1,11 @@
-﻿using CinemaSystem.Models.DTOs.Actors;
+﻿using AutoMapper;
+using CinemaSystem.Models.DTOs;
+using CinemaSystem.Models.DTOs.Actors;
+using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.ActorServices;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,17 +20,23 @@ namespace CinemaSystem.WebApi.Controllers
     public class ActorsController : ControllerBase
     {
         private readonly IActorServices actorServices;
+        private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
-        public ActorsController(IActorServices actorServices)
+        public ActorsController(IActorServices actorServices,
+            ApplicationDbContext context,
+            IMapper mapper)
         {
             this.actorServices = actorServices;
+            this.context = context;
+            this.mapper = mapper;
         }
 
         // GET: api/<ActorsController>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ActorDto>>> Get()
+        public async Task<ActionResult<IEnumerable<ActorDto>>> Get([FromQuery] PaginationDto paginationDto)
         {
-            IEnumerable<ActorDto> dtos = await this.actorServices.GetAllAsync();
+            IEnumerable<ActorDto> dtos = await this.actorServices.GetAllAsync(this.HttpContext, paginationDto);
             if (dtos.Any())
             {
                 return Ok(dtos);
@@ -70,10 +81,38 @@ namespace CinemaSystem.WebApi.Controllers
         }
 
         // DELETE api/<ActorsController>/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
             await this.actorServices.DeleteByIdAsync(id);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorBaseDto> patchDocument)
+        {
+            if (patchDocument == null)
+            {
+                return BadRequest();
+            }
+
+            Actor entity = await this.context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            ActorBaseDto actorBaseDto = this.mapper.Map<ActorBaseDto>(entity);
+            patchDocument.ApplyTo(actorBaseDto, ModelState);
+            bool isValid = TryValidateModel(actorBaseDto);
+            if (!isValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            this.mapper.Map(actorBaseDto, entity);
+            await this.context.SaveChangesAsync();
 
             return NoContent();
         }
