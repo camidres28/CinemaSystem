@@ -12,5 +12,6 @@ namespace CinemaSystem.Models.Entities
         [Required]
         public DateTimeOffset BirthDay { get; set; }
         public string PhotoUrl { get; set; }
+        public MoviesActors[] MoviesActors { get; set; }
     }
 }

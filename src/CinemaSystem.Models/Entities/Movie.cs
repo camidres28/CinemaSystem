@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CinemaSystem.Models.Entities
 {
@@ -16,5 +12,7 @@ namespace CinemaSystem.Models.Entities
         public bool IsOnCinema { get; set; }
         public string PosterUrl { get; set; }
         public DateTimeOffset ReleaseDate { get; set; }
+        public MoviesActors[] MoviesActors { get; set; }
+        public MoviesGenres[] MoviesGenres { get; set; }
     }
 }

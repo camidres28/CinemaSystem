@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CinemaSystem.Models.Entities
 {
@@ -13,5 +8,6 @@ namespace CinemaSystem.Models.Entities
         [Required]
         [StringLength(40)]
         public string Name { get; set; }
+        public MoviesGenres[] MoviesGenres { get; set; }
     }
 }

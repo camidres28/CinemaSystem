@@ -44,6 +44,7 @@ namespace CinemaSystem.Services.MovieServices
                 entity.PosterUrl = url;
             }
 
+            this.AsigningOrderToActors(entity);
             await this.dbContext.Movies.AddAsync(entity);
             await this.dbContext.SaveChangesAsync();
 
@@ -86,7 +87,10 @@ namespace CinemaSystem.Services.MovieServices
 
         public async Task UpdateAsync(int id, MovieCreateUpdateDto dto)
         {
-            Movie entity = await this.dbContext.Movies.FirstOrDefaultAsync(x => x.Id == id);
+            Movie entity = await this.dbContext.Movies
+                .Include(x => x.MoviesActors)
+                .Include(x => x.MoviesGenres)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (entity != null)
             {
                 entity = this.mapper.Map(dto, entity);
@@ -101,8 +105,21 @@ namespace CinemaSystem.Services.MovieServices
                     entity.PosterUrl = url;
                 }
 
+                this.AsigningOrderToActors(entity);
                 this.dbContext.Entry(entity).State = EntityState.Modified;
                 await this.dbContext.SaveChangesAsync();
+            }
+        }
+
+        private void AsigningOrderToActors(Movie movie)
+        {
+            if (movie.MoviesActors != null)
+            {
+                int l = movie.MoviesActors.Length;
+                for (int i = 0; i < l; i++)
+                {
+                    movie.MoviesActors[i].Order = i;
+                }
             }
         }
     }
