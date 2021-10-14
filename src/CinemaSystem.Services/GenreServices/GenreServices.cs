@@ -2,33 +2,30 @@
 using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Genres;
 using CinemaSystem.Models.Entities;
-using CinemaSystem.Services.ExtensionsServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CinemaSystem.Services.GenreServices
 {
-    public class GenreServices : IGenreServices
+    public class GenreServices : BaseServices, IGenreServices
     {
         private readonly IMapper mapper;
-        private readonly ApplicationDbContext context;
+        private readonly ApplicationDbContext dbContext;
 
-        public GenreServices(IMapper mapper, ApplicationDbContext context)
+        public GenreServices(IMapper mapper, ApplicationDbContext dbContext)
+            :base(dbContext, mapper)
         {
             this.mapper = mapper;
-            this.context = context;
+            this.dbContext = dbContext;
         }
 
         public async Task<GenreDto> CreateAsync(GenreCreateUpdateDto dto)
         {
             Genre entity = this.mapper.Map<Genre>(dto);
-            this.context.Genres.Add(entity);
-            await this.context.SaveChangesAsync();
+            this.dbContext.Genres.Add(entity);
+            await this.dbContext.SaveChangesAsync();
 
             GenreDto genreDto = this.mapper.Map<GenreDto>(entity);
 
@@ -37,41 +34,32 @@ namespace CinemaSystem.Services.GenreServices
 
         public async Task DeleteByIdAsync(int id)
         {
-            Genre entity = await this.context.Genres.FirstOrDefaultAsync(x => x.Id == id);
-            if (entity != null)
-            {
-                this.context.Genres.Remove(entity);
-                await this.context.SaveChangesAsync();
-            }
+            await this.DeleteByIdAsync<Genre>(id);            
         }
 
         public async Task<IEnumerable<GenreDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
         {
-            IQueryable<Genre> queryable = this.context.Genres.AsQueryable();
-            await httpContext.InsertPaginationParameters(queryable, paginationDto.RegistersPerPageQuantity);
-            IEnumerable<Genre> genres = await queryable.Paginate(paginationDto).ToListAsync();
-            IEnumerable<GenreDto> dtos = this.mapper.Map<IEnumerable<GenreDto>>(genres);
+            IEnumerable<GenreDto> dtos = await this.GetAllAsync<Genre, GenreDto>(httpContext, paginationDto);
 
             return dtos;
         }
 
         public async Task<GenreDto> GetByIdAsync(int id)
         {
-            Genre entity = await this.context.Genres.FirstOrDefaultAsync(x => x.Id == id);
-            GenreDto dto = entity == null ? null : this.mapper.Map<GenreDto>(entity);
+            GenreDto dto = await this.GetByIdAsync<Genre, GenreDto>(id);
 
             return dto;
         }
 
         public async Task UpdateAsync(int id, GenreCreateUpdateDto dto)
         {
-            bool exists = await this.context.Genres.AnyAsync(x => x.Id == id);
+            bool exists = await this.dbContext.Genres.AnyAsync(x => x.Id == id);
             if (exists)
             {
                 Genre entity = this.mapper.Map<Genre>(dto);
                 entity.Id = id;
-                this.context.Entry(entity).State = EntityState.Modified;
-                await this.context.SaveChangesAsync();
+                this.dbContext.Entry(entity).State = EntityState.Modified;
+                await this.dbContext.SaveChangesAsync();
             }            
         }
     }

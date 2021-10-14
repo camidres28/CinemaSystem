@@ -3,10 +3,7 @@ using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Movies;
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.MovieServices;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,19 +14,16 @@ namespace CinemaSystem.WebApi.Controllers
 {
     [Route("api/movies")]
     [ApiController]
-    public class MoviesController : ControllerBase
+    public class MoviesController : CustomControllerBase
     {
         private readonly IMovieServices movieServices;
-        private readonly ApplicationDbContext dbContext;
-        private readonly IMapper mapper;
-
+        
         public MoviesController(IMovieServices movieServices,
             ApplicationDbContext dbContext,
             IMapper mapper)
+            : base(dbContext, mapper)
         {
             this.movieServices = movieServices;
-            this.dbContext = dbContext;
-            this.mapper = mapper;
         }
 
         // GET: api/<MoviesController>
@@ -45,8 +39,20 @@ namespace CinemaSystem.WebApi.Controllers
             return NoContent();
         }
 
+        [HttpGet("filtering")]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> Get([FromQuery] FilterMoviesDto filterDto)
+        {
+            IEnumerable<MovieDto> dtos = await this.movieServices.GetByFilteringAsync(this.HttpContext, filterDto);
+            if (dtos.Any())
+            {
+                return Ok(dtos);
+            }
+
+            return NoContent();
+        }
+
         // GET api/<MoviesController>/5
-        [HttpGet("{id:int}", Name ="GetMovieById")]
+        [HttpGet("{id:int}", Name = "GetMovieById")]
         public async Task<ActionResult<MovieDto>> Get(int id)
         {
             MovieDto dto = await this.movieServices.GetByIdAsync(id);
@@ -86,34 +92,6 @@ namespace CinemaSystem.WebApi.Controllers
         public async Task<ActionResult> Delete(int id)
         {
             await this.movieServices.DeleteByIdAsync(id);
-
-            return NoContent();
-        }
-
-        [HttpPatch("{id:int}")]
-        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<MovieBaseDto> patchDocument)
-        {
-            if (patchDocument == null)
-            {
-                return BadRequest();
-            }
-
-            Movie entity = await this.dbContext.Movies.FirstOrDefaultAsync(x=>x.Id == id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
-
-            MovieBaseDto movieBaseDto = this.mapper.Map<MovieBaseDto>(entity);
-            patchDocument.ApplyTo(movieBaseDto, this.ModelState);
-            bool isValid = TryValidateModel(movieBaseDto);
-            if (!isValid)
-            {
-                return BadRequest(this.ModelState);
-            }
-
-            this.mapper.Map(movieBaseDto, entity);
-            await this.dbContext.SaveChangesAsync();
 
             return NoContent();
         }

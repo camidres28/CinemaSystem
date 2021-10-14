@@ -6,28 +6,33 @@ using CinemaSystem.Services.ExtensionsServices;
 using CinemaSystem.Services.StorageServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 
 namespace CinemaSystem.Services.MovieServices
 {
-    public class MovieServices : IMovieServices
+    public class MovieServices : BaseServices, IMovieServices
     {
         private readonly string container = "movies";
         private readonly IMapper mapper;
         private readonly ApplicationDbContext dbContext;
         private readonly IFileStorageServices fileStorage;
+        private readonly ILogger<MovieServices> logger;
 
         public MovieServices(IMapper mapper, ApplicationDbContext dbContext,
-            IFileStorageServices fileStorage)
+            IFileStorageServices fileStorage,
+            ILogger<MovieServices> logger)
+            :base(dbContext, mapper)
         {
             this.mapper = mapper;
             this.dbContext = dbContext;
             this.fileStorage = fileStorage;
+            this.logger = logger;
         }
 
         public async Task<MovieDto> CreateAsync(MovieCreateUpdateDto dto)
@@ -55,30 +60,72 @@ namespace CinemaSystem.Services.MovieServices
 
         public async Task DeleteByIdAsync(int id)
         {
-            bool exists = await this.dbContext.Movies.AnyAsync(x => x.Id == id);
-            if (exists)
-            {
-                this.dbContext.Movies.Remove(new Movie { Id = id });
-                await this.dbContext.SaveChangesAsync();
-            }
+            await this.DeleteByIdAsync<Movie>(id);
         }
 
         public async Task<IEnumerable<MovieDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
         {
-            IQueryable<Movie> queryable = this.dbContext.Movies.AsQueryable();
-            await httpContext.InsertPaginationParameters(queryable, paginationDto.RegistersPerPageQuantity);
-            IEnumerable<Movie> entities = await queryable.Paginate(paginationDto).ToListAsync();
-            IEnumerable<MovieDto> dtos = this.mapper.Map<IEnumerable<MovieDto>>(entities);
+            IEnumerable<MovieDto> dtos = await this.GetAllAsync<Movie, MovieDto>(httpContext, paginationDto);
 
             return dtos;
         }
 
-        public async Task<MovieDto> GetByIdAsync(int id)
+        public async Task<IEnumerable<MovieDto>> GetByFilteringAsync(HttpContext httpContext, FilterMoviesDto dto)
         {
-            Movie entity = await this.dbContext.Movies.FirstOrDefaultAsync(x => x.Id == id);
+            IQueryable<Movie> queryable = this.dbContext.Movies.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(dto.Title))
+            {
+                queryable = queryable.Where(x => x.Title.Contains(dto.Title));
+            }
+
+            if (dto.OnCinema)
+            {
+                queryable = queryable.Where(x => x.IsOnCinema);
+            }
+
+            if (dto.FutureReleases)
+            {
+                DateTimeOffset today = new DateTimeOffset(DateTime.Now);
+                queryable = queryable.Where(x => x.ReleaseDate > today);
+            }
+
+            if (dto.GenreId > 0)
+            {
+                queryable = queryable.Where(x => x.MoviesGenres.Select(x => x.GenreId).Contains(dto.GenreId));
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.OrderField))
+            {
+                string orderType = dto.OrderAscending ? "ascending" : "descending";
+                try
+                {
+                    queryable = queryable.OrderBy($"{dto.OrderField} {orderType}");
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(ex.Message, ex);
+                }
+            }
+
+            await httpContext.InsertPaginationParameters(queryable, dto.RegistersPerPageQuantity);
+
+            IEnumerable<Movie> movies = await queryable.Paginate(dto).ToListAsync();
+            IEnumerable<MovieDto> movieDtos = this.mapper.Map<IEnumerable<MovieDto>>(movies);
+
+            return movieDtos;
+        }
+
+        public async Task<MovieDetailsDto> GetByIdAsync(int id)
+        {
+            Movie entity = await this.dbContext.Movies
+                .Include(x=>x.MoviesActors).ThenInclude(x=>x.Actor)
+                .Include(x=>x.MoviesGenres).ThenInclude(x=>x.Genre)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (entity != null)
             {
-                MovieDto dto = this.mapper.Map<MovieDto>(entity);
+                entity.MoviesActors = entity.MoviesActors.OrderBy(x => x.Order).ToList();
+                MovieDetailsDto dto = this.mapper.Map<MovieDetailsDto>(entity);
+
                 return dto;
             }
 
@@ -111,14 +158,16 @@ namespace CinemaSystem.Services.MovieServices
             }
         }
 
+
         private void AsigningOrderToActors(Movie movie)
         {
             if (movie.MoviesActors != null)
             {
-                int l = movie.MoviesActors.Length;
-                for (int i = 0; i < l; i++)
+                int order = 1;
+                foreach (MoviesActors ma in movie.MoviesActors)
                 {
-                    movie.MoviesActors[i].Order = i;
+                    ma.Order = order;
+                    order++;
                 }
             }
         }

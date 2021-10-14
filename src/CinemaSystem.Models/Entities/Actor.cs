@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CinemaSystem.Models.Entities
 {
-    public class Actor
+    public class Actor: IId
     {
         public int Id { get; set; }
         [Required]
@@ -12,6 +13,6 @@ namespace CinemaSystem.Models.Entities
         [Required]
         public DateTimeOffset BirthDay { get; set; }
         public string PhotoUrl { get; set; }
-        public MoviesActors[] MoviesActors { get; set; }
+        public IEnumerable<MoviesActors> MoviesActors { get; set; }
     }
 }

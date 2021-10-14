@@ -5,28 +5,26 @@ using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.StorageServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using CinemaSystem.Services.ExtensionsServices;
 
 namespace CinemaSystem.Services.ActorServices
 {
-    public class ActorServices : IActorServices
+    public class ActorServices : BaseServices, IActorServices
     {
         private readonly string container = "actors";
         private readonly IMapper mapper;
-        private readonly ApplicationDbContext context;
+        private readonly ApplicationDbContext dbContext;
         private readonly IFileStorageServices fileStorage;
 
-        public ActorServices(IMapper mapper, ApplicationDbContext context,
+        public ActorServices(IMapper mapper, ApplicationDbContext dbContext,
             IFileStorageServices fileStorage)
+            : base(dbContext, mapper)
         {
             this.mapper = mapper;
-            this.context = context;
+            this.dbContext = dbContext;
             this.fileStorage = fileStorage;
         }
 
@@ -39,13 +37,13 @@ namespace CinemaSystem.Services.ActorServices
                 await dto.Photo.CopyToAsync(stream);
                 byte[] content = stream.ToArray();
                 string extension = Path.GetExtension(dto.Photo.FileName);
-                string uri = await this.fileStorage.SaveFileAsync(content, extension, 
+                string uri = await this.fileStorage.SaveFileAsync(content, extension,
                     this.container, dto.Photo.ContentType);
                 entity.PhotoUrl = uri;
             }
 
-            await this.context.Actors.AddAsync(entity);
-            await this.context.SaveChangesAsync();
+            await this.dbContext.Actors.AddAsync(entity);
+            await this.dbContext.SaveChangesAsync();
 
             ActorDto actorDto = this.mapper.Map<ActorDto>(entity);
 
@@ -54,39 +52,35 @@ namespace CinemaSystem.Services.ActorServices
 
         public async Task DeleteByIdAsync(int id)
         {
-            Actor entity = await this.context.Actors.FirstOrDefaultAsync(x => x.Id == id);
-            if (entity != null)
-            {
-                this.context.Actors.Remove(entity);
-                await this.context.SaveChangesAsync();
-            }
+            await this.DeleteByIdAsync<Actor>(id);
         }
 
         public async Task<IEnumerable<ActorDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
         {
-            IQueryable<Actor> queryable = this.context.Actors.AsQueryable();
-            await httpContext.InsertPaginationParameters(queryable, paginationDto.RegistersPerPageQuantity);
-            IEnumerable<Actor> entities = await queryable.Paginate(paginationDto).ToListAsync();
-            IEnumerable<ActorDto> dtos = this.mapper.Map<IEnumerable<ActorDto>>(entities);
+            IEnumerable<ActorDto> dtos = await this.GetAllAsync<Actor, ActorDto>(httpContext, paginationDto);
 
             return dtos;
         }
 
-        public async Task<ActorDto> GetByIdAsync(int id)
+        public async Task<ActorDetailsDto> GetByIdAsync(int id)
         {
-            Actor entity = await this.context.Actors.FirstOrDefaultAsync(x => x.Id == id);
-            if (entity != null)
+            Actor entity = await this.dbContext.Actors
+                .Include(x => x.MoviesActors).ThenInclude(x => x.Movie)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (entity!= null)
             {
-                ActorDto dto = this.mapper.Map<ActorDto>(entity);
+                entity.MoviesActors = entity.MoviesActors.OrderByDescending(x => x.Movie.ReleaseDate);
+                ActorDetailsDto dto = this.mapper.Map<ActorDetailsDto>(entity);
+
                 return dto;
             }
-
+            
             return null;
         }
 
         public async Task UpdateAsync(int id, ActorCreateUpdateDto dto)
         {
-            Actor entity = await this.context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+            Actor entity = await this.dbContext.Actors.FirstOrDefaultAsync(x => x.Id == id);
             if (entity != null)
             {
                 entity = this.mapper.Map(dto, entity);
@@ -101,7 +95,7 @@ namespace CinemaSystem.Services.ActorServices
                 }
                 //this.context.Entry(entity).State = EntityState.Modified;
                 //this.context.Actors.Update(entity);
-                await this.context.SaveChangesAsync();
+                await this.dbContext.SaveChangesAsync();
             }
         }
     }
