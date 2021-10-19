@@ -3,6 +3,7 @@ using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Movies;
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.MovieServices;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,8 +72,7 @@ namespace CinemaSystem.WebApi.Controllers
             MovieDto movieDto = await this.movieServices.CreateAsync(dto);
             if (movieDto != null)
             {
-                ActionResult result = CreatedAtRoute("GetMovieById", new { Id = movieDto.Id }, movieDto);
-                return result;
+                return CreatedAtRoute("GetMovieById", new { Id = movieDto.Id }, movieDto);
             }
 
             return NoContent();
@@ -94,6 +94,14 @@ namespace CinemaSystem.WebApi.Controllers
             await this.movieServices.DeleteByIdAsync(id);
 
             return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<MovieBaseDto> patchDocument)
+        {
+            ActionResult result = await this.Patch<Movie, MovieBaseDto>(id, patchDocument);
+
+            return result;
         }
     }
 }

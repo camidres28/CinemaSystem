@@ -3,6 +3,7 @@ using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Actors;
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.ActorServices;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,6 +82,14 @@ namespace CinemaSystem.WebApi.Controllers
             await this.actorServices.DeleteByIdAsync(id);
 
             return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorBaseDto> patchDocument)            
+        {
+            ActionResult result = await this.Patch<Actor, ActorBaseDto>(id, patchDocument);
+
+            return result;
         }
     }
 }

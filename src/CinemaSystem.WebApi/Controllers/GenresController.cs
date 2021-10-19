@@ -1,8 +1,10 @@
-﻿using CinemaSystem.Models.DTOs;
+﻿using AutoMapper;
+using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Genres;
+using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.GenreServices;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,11 +15,14 @@ namespace CinemaSystem.WebApi.Controllers
 {
     [Route("api/genres")]
     [ApiController]
-    public class GenresController : ControllerBase
+    public class GenresController : CustomControllerBase
     {
         private readonly IGenreServices genreServices;
 
-        public GenresController(IGenreServices genreServices)
+        public GenresController(IGenreServices genreServices,
+            ApplicationDbContext dbContext,
+            IMapper mapper)
+            : base(dbContext, mapper)
         {
             this.genreServices = genreServices;
         }
@@ -74,6 +79,14 @@ namespace CinemaSystem.WebApi.Controllers
             await this.genreServices.DeleteByIdAsync(id);
 
             return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<GenreCreateUpdateDto> patchDocument)
+        {
+            ActionResult result = await this.Patch<Genre, GenreCreateUpdateDto>(id, patchDocument);
+
+            return result;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace CinemaSystem.Services.MovieServices
         public MovieServices(IMapper mapper, ApplicationDbContext dbContext,
             IFileStorageServices fileStorage,
             ILogger<MovieServices> logger)
-            :base(dbContext, mapper)
+            : base(dbContext, mapper)
         {
             this.mapper = mapper;
             this.dbContext = dbContext;
@@ -117,19 +117,18 @@ namespace CinemaSystem.Services.MovieServices
 
         public async Task<MovieDetailsDto> GetByIdAsync(int id)
         {
+            MovieDetailsDto dto = null;
             Movie entity = await this.dbContext.Movies
-                .Include(x=>x.MoviesActors).ThenInclude(x=>x.Actor)
-                .Include(x=>x.MoviesGenres).ThenInclude(x=>x.Genre)
+                .Include(x => x.MoviesActors).ThenInclude(x => x.Actor)
+                .Include(x => x.MoviesGenres).ThenInclude(x => x.Genre)
                 .FirstOrDefaultAsync(x => x.Id == id);
             if (entity != null)
             {
                 entity.MoviesActors = entity.MoviesActors.OrderBy(x => x.Order).ToList();
-                MovieDetailsDto dto = this.mapper.Map<MovieDetailsDto>(entity);
-
-                return dto;
+                dto = this.mapper.Map<MovieDetailsDto>(entity);
             }
 
-            return null;
+            return dto;
         }
 
         public async Task UpdateAsync(int id, MovieCreateUpdateDto dto)

@@ -4,20 +4,21 @@ using CinemaSystem.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NetTopologySuite.Geometries;
 
 namespace CinemaSystem.Models.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211015153807_cinemas")]
+    partial class cinemas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.11")
+                .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("CinemaSystem.Models.Entities.Actor", b =>
@@ -70,9 +71,6 @@ namespace CinemaSystem.Models.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Point>("Location")
-                        .HasColumnType("geography");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -81,50 +79,6 @@ namespace CinemaSystem.Models.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cinemas");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 2,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-77.25993641568172 1.2051981387352946)"),
-                            Name = "CC Unico Outlet - Pasto"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-77.2885785290831 1.2168629502902595)"),
-                            Name = "CC Unicentro - Pasto"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-77.6489019621852 0.830024343220887)"),
-                            Name = "CC Gran Plaza - Ipiales"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-76.53861779345984 3.3744423246654374)"),
-                            Name = "CC Ciudadela Unicentro - Cali"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-76.54491406814019 3.3950819652927047)"),
-                            Name = "CC Premier Limonar - Cali"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-76.52789708329091 3.476271374637295)"),
-                            Name = "CC Chipichape - Cali"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Location = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-74.04591291868017 4.766101549734984)"),
-                            Name = "CC Santafe - Bogota"
-                        });
                 });
 
             modelBuilder.Entity("CinemaSystem.Models.Entities.Genre", b =>

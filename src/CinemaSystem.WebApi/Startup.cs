@@ -1,22 +1,19 @@
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.ActorServices;
+using CinemaSystem.Services.CinemaServices;
 using CinemaSystem.Services.GenreServices;
+using CinemaSystem.Services.MappersServices;
 using CinemaSystem.Services.MovieServices;
 using CinemaSystem.Services.StorageServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 
 namespace CinemaSystem.WebApi
 {
@@ -24,7 +21,7 @@ namespace CinemaSystem.WebApi
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration; 
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -35,10 +32,24 @@ namespace CinemaSystem.WebApi
             services.AddScoped<IGenreServices, GenreServices>();
             services.AddScoped<IActorServices, ActorServices>();
             services.AddScoped<IMovieServices, MovieServices>();
+            services.AddScoped<ICinemaServices, CinemaServices>();
+
             services.AddTransient<IFileStorageServices, AzureFileStorageServices>();
-            services.AddAutoMapper(typeof(Services.MappersServices.AutoMapperProfileServices));
+            services.AddAutoMapper(typeof(AutoMapperProfileServices));
+            services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+            services.AddSingleton(provider =>
+
+                    new AutoMapper.MapperConfiguration(
+                        config =>
+                        {
+                            GeometryFactory geometry = provider.GetRequiredService<GeometryFactory>();
+                            config.AddProfile(new AutoMapperProfileServices(geometry));
+                        }).CreateMapper()
+                );
             services.AddDbContext<ApplicationDbContext>(
-                options => options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection")));
+                options => options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"),
+                sqlServerOptions => sqlServerOptions.UseNetTopologySuite())
+                );
             services.AddControllers().AddNewtonsoftJson();
             services.AddSwaggerGen(c =>
             {

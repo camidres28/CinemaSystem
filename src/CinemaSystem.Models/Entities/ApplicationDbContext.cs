@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 
@@ -15,6 +17,8 @@ namespace CinemaSystem.Models.Entities
         public DbSet<Movie> Movies { get; set; }
         public DbSet<MoviesActors> MoviesActors { get; set; }
         public DbSet<MoviesGenres> MoviesGenres { get; set; }
+        public DbSet<Cinema> Cinemas { get; set; }
+        public DbSet<MoviesCinemas> MoviesCinemas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,6 +28,9 @@ namespace CinemaSystem.Models.Entities
             modelBuilder.Entity<MoviesGenres>()
                 .HasKey(x => new { x.MovieId, x.GenreId });
 
+            modelBuilder.Entity<MoviesCinemas>()
+                .HasKey(x => new { x.MovieId, x.CinemaId });
+
             this.SeedDada(modelBuilder);
 
             base.OnModelCreating(modelBuilder);
@@ -31,18 +38,31 @@ namespace CinemaSystem.Models.Entities
 
         private void SeedDada(ModelBuilder modelBuilder)
         {
-            Genre adventure = new () { Id = 9, Name = "Adventure" };
-            Genre animation = new () { Id = 10, Name = "Animation" };
-            Genre suspence = new () { Id = 11, Name = "Suspence" };
-            
+            GeometryFactory geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+            modelBuilder.Entity<Cinema>()
+                .HasData(new List<Cinema>
+                {
+                    new(){Id = 2, Name = "CC Unico Outlet - Pasto", Location = geometryFactory.CreatePoint(new Coordinate(-77.25993641568172, 1.2051981387352946))},
+                    new(){Id = 3, Name = "CC Unicentro - Pasto", Location = geometryFactory.CreatePoint(new Coordinate(-77.2885785290831, 1.2168629502902595))},
+                    new(){Id = 4, Name = "CC Gran Plaza - Ipiales", Location = geometryFactory.CreatePoint(new Coordinate(-77.6489019621852, 0.830024343220887))},
+                    new(){Id = 5, Name = "CC Ciudadela Unicentro - Cali", Location = geometryFactory.CreatePoint(new Coordinate(-76.53861779345984, 3.3744423246654374))},
+                    new(){Id = 6, Name = "CC Premier Limonar - Cali", Location = geometryFactory.CreatePoint(new Coordinate(-76.54491406814019, 3.3950819652927047))},
+                    new(){Id = 7, Name = "CC Chipichape - Cali", Location = geometryFactory.CreatePoint(new Coordinate(-76.52789708329091, 3.476271374637295))},
+                    new(){Id = 8, Name = "CC Santafe - Bogota", Location = geometryFactory.CreatePoint(new Coordinate(-74.04591291868017, 4.766101549734984))}
+                });
+
+            Genre adventure = new() { Id = 9, Name = "Adventure" };
+            Genre animation = new() { Id = 10, Name = "Animation" };
+            Genre suspence = new() { Id = 11, Name = "Suspence" };
+
             modelBuilder.Entity<Genre>()
                 .HasData(new List<Genre>
                 {
                     adventure, animation, suspence
                 });
 
-            Actor jimCarrey = new () { Id = 7, Name = "Jim Carrey", BirthDay = new DateTimeOffset(new DateTime( 1962, 01, 17)) };
-            Actor chrisEvans = new () { Id = 8, Name = "Chris Evans", BirthDay = new DateTimeOffset(new DateTime(1981, 06, 13)) };
+            Actor jimCarrey = new() { Id = 7, Name = "Jim Carrey", BirthDay = new DateTimeOffset(new DateTime(1962, 01, 17)) };
+            Actor chrisEvans = new() { Id = 8, Name = "Chris Evans", BirthDay = new DateTimeOffset(new DateTime(1981, 06, 13)) };
             Actor galGadoth = new() { Id = 9, Name = "Gal Gadot", BirthDay = new DateTimeOffset(new DateTime(1985, 04, 30)) };
 
 
@@ -53,15 +73,15 @@ namespace CinemaSystem.Models.Entities
                 });
 
 
-            Movie iw = new ()
+            Movie iw = new()
             {
                 Id = 3,
                 Title = "Avengers: Infinity Wars",
                 IsOnCinema = true,
-                ReleaseDate = new DateTimeOffset( new DateTime(2018, 04, 23))
+                ReleaseDate = new DateTimeOffset(new DateTime(2018, 04, 23))
             };
 
-            Movie sonic = new ()
+            Movie sonic = new()
             {
                 Id = 4,
                 Title = "Sonic the Hedgehog",
@@ -69,7 +89,7 @@ namespace CinemaSystem.Models.Entities
                 ReleaseDate = new DateTimeOffset(new DateTime(2020, 02, 28))
             };
 
-            Movie emma = new ()
+            Movie emma = new()
             {
                 Id = 5,
                 Title = "Emma",
@@ -77,7 +97,7 @@ namespace CinemaSystem.Models.Entities
                 ReleaseDate = new DateTimeOffset(new DateTime(2020, 02, 21))
             };
 
-            Movie wonderwoman = new ()
+            Movie wonderwoman = new()
             {
                 Id = 6,
                 Title = "Wonder Woman 1984",

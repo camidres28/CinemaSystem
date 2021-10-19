@@ -1,19 +1,21 @@
 ﻿using AutoMapper;
 using CinemaSystem.Models.DTOs.Actors;
+using CinemaSystem.Models.DTOs.Cinemas;
 using CinemaSystem.Models.DTOs.Genres;
 using CinemaSystem.Models.DTOs.Movies;
 using CinemaSystem.Models.Entities;
+using NetTopologySuite.Geometries;
 using System.Collections.Generic;
 
 namespace CinemaSystem.Services.MappersServices
 {
     public class AutoMapperProfileServices : Profile
     {
-        public AutoMapperProfileServices()
+        public AutoMapperProfileServices(GeometryFactory geometryFactory)
         {
             //Genres
             CreateMap<GenreDto, Genre>().ReverseMap();
-            CreateMap<GenreCreateUpdateDto, Genre>();
+            CreateMap<GenreCreateUpdateDto, Genre>().ReverseMap();
 
             //Actors
             CreateMap<Actor, ActorDto>().ReverseMap();
@@ -32,10 +34,26 @@ namespace CinemaSystem.Services.MappersServices
 
             CreateMap<Movie, MovieDetailsDto>()
                 .ForMember(x => x.Genres, options => options.MapFrom(this.MoviesGenresMapping))
-                .ForMember(x=> x.Actors, options => options.MapFrom(this.MoviesActorsMapping));
+                .ForMember(x => x.Actors, options => options.MapFrom(this.MoviesActorsMapping));
 
             CreateMap<Movie, MovieBaseDto>().ReverseMap();
 
+            //Cinemas
+            CreateMap<Cinema, CinemaDto>().ReverseMap();
+            CreateMap<Cinema, CinemaDto>()
+                .ForMember(x => x.Latitude, x => x.MapFrom(y => y.Location.Y))
+                .ForMember(x => x.Longitude, x => x.MapFrom(y => y.Location.X));
+            CreateMap<CinemaDto, Cinema>()
+                .ForMember(x => x.Location, x => x.MapFrom(x =>
+                   geometryFactory.CreatePoint(new Coordinate(x.Longitude, x.Latitude))));
+            CreateMap<Cinema, CinemaDetailsDto>()
+                .ForMember(x => x.Movies, options => options.MapFrom(this.MoviesCinemasMapping))
+                .ForMember(x => x.Latitude, x => x.MapFrom(y => y.Location.Y))
+                .ForMember(x => x.Longitude, x => x.MapFrom(y => y.Location.X));
+            CreateMap<CinemaCreationUpdateDto, Cinema>()
+                .ForMember(x => x.Location, x => x.MapFrom(x =>
+                   geometryFactory.CreatePoint(new Coordinate(x.Longitude, x.Latitude))))
+                .ForMember(x => x.MoviesCinemas, options => options.MapFrom(this.MoviesCinemasMapping));
         }
 
         private object Mapping(Actor arg)
@@ -154,6 +172,50 @@ namespace CinemaSystem.Services.MappersServices
                 };
 
                 result.Add(movieGenre);
+            }
+
+            return result;
+        }
+
+        private IEnumerable<MovieDto> MoviesCinemasMapping(Cinema entity, CinemaDetailsDto dto)
+        {
+            List<MovieDto> result = new();
+
+            if (entity.MoviesCinemas == null)
+            {
+                return result;
+            }
+
+            foreach (MoviesCinemas item in entity.MoviesCinemas)
+            {
+                MovieDto movieDto = new()
+                {
+                    Id = item.MovieId,
+                    Title = item.Movie.Title,
+                    IsOnCinema = item.Movie.IsOnCinema,
+                    ReleaseDate = item.Movie.ReleaseDate,
+                    PosterUrl = item.Movie.PosterUrl
+                };
+
+                result.Add(movieDto);
+            }
+
+            return result;
+        }
+
+        private IEnumerable<MoviesCinemas> MoviesCinemasMapping(CinemaCreationUpdateDto dto, Cinema entity)
+        {
+            List<MoviesCinemas> result = new();
+            if (dto.MoviesId == null)
+            {
+                return result;
+            }
+
+            foreach (int item in dto.MoviesId)
+            {
+                MoviesCinemas mc = new() { MovieId = item };
+
+                result.Add(mc);
             }
 
             return result;

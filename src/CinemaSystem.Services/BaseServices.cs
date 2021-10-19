@@ -49,5 +49,30 @@ namespace CinemaSystem.Services
                 await this.dbContext.SaveChangesAsync();
             }
         }
+
+        protected async Task<TReadingDto> CreateAsync<TEntity, TReadingDto, TCreation>(TCreation dto)
+            where TEntity : class
+        {
+            TEntity entity = this.mapper.Map<TEntity>(dto);
+            await this.dbContext.Set<TEntity>().AddAsync(entity);
+            await this.dbContext.SaveChangesAsync();
+
+            TReadingDto readingDto = this.mapper.Map<TReadingDto>(entity);
+
+            return readingDto;
+        }
+
+        protected async Task UpdateAsync<TEntity, TUpdate>(int id, TUpdate dto)
+            where TEntity:class, IId
+        {
+            bool exists = await this.dbContext.Set<TEntity>().AnyAsync(x => x.Id == id);
+            if (exists)
+            {
+                TEntity entity = this.mapper.Map<TEntity>(dto);
+                entity.Id = id;
+                this.dbContext.Entry(entity).State = EntityState.Modified;
+                await this.dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

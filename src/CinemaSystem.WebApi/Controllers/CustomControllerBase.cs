@@ -18,7 +18,6 @@ namespace CinemaSystem.WebApi.Controllers
             this.mapper = mapper;
         }
 
-        [HttpPatch("{id:int}")]
         protected async Task<ActionResult> Patch<TEntity, TDTO>(int id, [FromBody] JsonPatchDocument<TDTO> patchDocument)
             where TEntity : class, IId
             where TDTO : class

@@ -15,5 +15,6 @@ namespace CinemaSystem.Models.Entities
         public DateTimeOffset ReleaseDate { get; set; }
         public IEnumerable<MoviesActors> MoviesActors { get; set; }
         public IEnumerable<MoviesGenres> MoviesGenres { get; set; }
+        public IEnumerable<MoviesCinemas> MoviesCinemas { get; set; }
     }
 }
