@@ -43,12 +43,12 @@ namespace CinemaSystem.Services.MovieReviewsServices
         public async Task<ReviewReadingDto> GetByIdAsync(int id)
         {
             ReviewReadingDto dto = null;
-            Review entity = await this.dbContext.Reviews.Include(x => x.User).FirstOrDefaultAsync(x=>x.Id == id);
-            if (entity!= null)
+            Review entity = await this.dbContext.Reviews.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
+            if (entity != null)
             {
                 dto = this.mapper.Map<ReviewReadingDto>(entity);
             }
-            
+
             return dto;
         }
 
@@ -78,11 +78,10 @@ namespace CinemaSystem.Services.MovieReviewsServices
         }
 
         public async Task<bool> UpdateAsync(int id,
-            HttpContext context, 
+            HttpContext context,
             ReviewCreateUpdateDto dto)
         {
-            string userId = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            bool exists = await this.dbContext.Reviews.AnyAsync(x => x.Id == id && x.UserId == userId);
+            bool exists = await this.ExistsReview(id, context);
             if (!exists)
             {
                 return false;
@@ -98,8 +97,7 @@ namespace CinemaSystem.Services.MovieReviewsServices
 
         public async Task<bool> DeleteByIdAsync(int id, HttpContext context)
         {
-            string userId = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            bool exists = await this.dbContext.Reviews.AnyAsync(x => x.Id == id && x.UserId == userId);
+            bool exists = await this.ExistsReview(id, context);
             if (!exists)
             {
                 return false;
@@ -109,6 +107,14 @@ namespace CinemaSystem.Services.MovieReviewsServices
             await this.dbContext.SaveChangesAsync();
 
             return true;
+        }
+
+        private async Task<bool> ExistsReview(int id, HttpContext context)
+        {
+            string userId = context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            bool exists = await this.dbContext.Reviews.AnyAsync(x => x.Id == id && x.UserId == userId);
+
+            return exists;
         }
     }
 }
