@@ -18,7 +18,7 @@ namespace CinemaSystem.WebApi.Controllers
     public class MoviesController : CustomControllerBase
     {
         private readonly IMovieServices movieServices;
-        
+
         public MoviesController(IMovieServices movieServices,
             ApplicationDbContext dbContext,
             IMapper mapper)
@@ -99,9 +99,7 @@ namespace CinemaSystem.WebApi.Controllers
         [HttpPatch("{id:int}")]
         public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<MovieBaseDto> patchDocument)
         {
-            ActionResult result = await this.Patch<Movie, MovieBaseDto>(id, patchDocument);
-
-            return result;
+            return await this.Patch<Movie, MovieBaseDto>(id, patchDocument);
         }
     }
 }

@@ -1,19 +1,26 @@
 using CinemaSystem.Models.Entities;
+using CinemaSystem.Services.AccountServices;
 using CinemaSystem.Services.ActorServices;
 using CinemaSystem.Services.CinemaServices;
 using CinemaSystem.Services.GenreServices;
 using CinemaSystem.Services.MappersServices;
+using CinemaSystem.Services.MovieReviewsServices;
 using CinemaSystem.Services.MovieServices;
 using CinemaSystem.Services.StorageServices;
+using CinemaSystem.WebApi.CustomFilters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using System.Text;
 
 namespace CinemaSystem.WebApi
 {
@@ -33,6 +40,9 @@ namespace CinemaSystem.WebApi
             services.AddScoped<IActorServices, ActorServices>();
             services.AddScoped<IMovieServices, MovieServices>();
             services.AddScoped<ICinemaServices, CinemaServices>();
+            services.AddScoped<IAccountServices, AccountServices>();
+            services.AddScoped<IMovieReviewsServices, MovieReviewsServices>();
+            services.AddScoped<ExistsMovieAttribute>();
 
             services.AddTransient<IFileStorageServices, AzureFileStorageServices>();
             services.AddAutoMapper(typeof(AutoMapperProfileServices));
@@ -55,6 +65,25 @@ namespace CinemaSystem.WebApi
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CinemaSystem.WebApi", Version = "v1" });
             });
+
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(
+                options =>
+                options.TokenValidationParameters =
+                new TokenValidationParameters()
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.Configuration["jwt:key"])),
+                    ClockSkew = System.TimeSpan.Zero
+                }
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

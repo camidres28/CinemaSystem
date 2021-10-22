@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using CinemaSystem.Models.DTOs.Accounts;
 using CinemaSystem.Models.DTOs.Actors;
 using CinemaSystem.Models.DTOs.Cinemas;
 using CinemaSystem.Models.DTOs.Genres;
 using CinemaSystem.Models.DTOs.Movies;
+using CinemaSystem.Models.DTOs.Reviews;
 using CinemaSystem.Models.Entities;
+using Microsoft.AspNetCore.Identity;
 using NetTopologySuite.Geometries;
 using System.Collections.Generic;
 
@@ -54,6 +57,16 @@ namespace CinemaSystem.Services.MappersServices
                 .ForMember(x => x.Location, x => x.MapFrom(x =>
                    geometryFactory.CreatePoint(new Coordinate(x.Longitude, x.Latitude))))
                 .ForMember(x => x.MoviesCinemas, options => options.MapFrom(this.MoviesCinemasMapping));
+
+            //Users
+            CreateMap<IdentityUser, UserDto>()
+                .ForMember(x => x.Id, x => x.MapFrom(y => y.Id))
+                .ForMember(x => x.Email, x => x.MapFrom(y => y.Email));
+
+            //MovieReviews
+            CreateMap<ReviewCreateUpdateDto, Review>();
+            CreateMap<Review, ReviewReadingDto>()
+                .ForMember(x => x.UserName, x => x.MapFrom(y => y.User.UserName));
         }
 
         private object Mapping(Actor arg)

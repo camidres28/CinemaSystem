@@ -24,6 +24,14 @@ namespace CinemaSystem.Services
             PaginationDto paginationDto) where TEntity : class
         {
             IQueryable<TEntity> queryable = this.dbContext.Set<TEntity>().AsQueryable<TEntity>();
+            IEnumerable<TDTO> dtos = await this.GetAllAsync<TEntity,TDTO>(httpContext, paginationDto, queryable);
+
+            return dtos;
+        }
+
+        protected async Task<IEnumerable<TDTO>> GetAllAsync<TEntity, TDTO>(HttpContext httpContext,
+            PaginationDto paginationDto, IQueryable<TEntity> queryable) where TEntity : class
+        {
             await httpContext.InsertPaginationParameters(queryable, paginationDto.RegistersPerPageQuantity);
             IEnumerable<TEntity> genres = await queryable.Paginate(paginationDto).ToListAsync();
             IEnumerable<TDTO> dtos = this.mapper.Map<IEnumerable<TDTO>>(genres);

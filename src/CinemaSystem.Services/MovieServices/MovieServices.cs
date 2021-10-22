@@ -35,6 +35,12 @@ namespace CinemaSystem.Services.MovieServices
             this.logger = logger;
         }
 
+        public async Task<bool> ExistsMovieAsync(int movieId)
+        {
+            bool exists = await this.dbContext.Movies.AnyAsync(x => x.Id == movieId);
+
+            return exists;
+        }
         public async Task<MovieDto> CreateAsync(MovieCreateUpdateDto dto)
         {
             Movie entity = this.mapper.Map<Movie>(dto);

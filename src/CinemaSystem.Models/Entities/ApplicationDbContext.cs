@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace CinemaSystem.Models.Entities
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
@@ -19,6 +22,7 @@ namespace CinemaSystem.Models.Entities
         public DbSet<MoviesGenres> MoviesGenres { get; set; }
         public DbSet<Cinema> Cinemas { get; set; }
         public DbSet<MoviesCinemas> MoviesCinemas { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +42,41 @@ namespace CinemaSystem.Models.Entities
 
         private void SeedDada(ModelBuilder modelBuilder)
         {
+            string rolAdminId = "de847a9b-d058-4771-8dac-3cac16764b8f";
+            string userAdminId = "4b8670d0-7cfb-4e75-9824-9ec1aee20e6c";
+
+            IdentityRole adminRole = new()
+            {
+                Id = rolAdminId,
+                Name = "Admin",
+                NormalizedName = "Admin"
+            };
+
+            PasswordHasher<IdentityUser> password = new();
+            string userAdminEmail = "camilo.jojoa@mailinator.com";
+
+            IdentityUser userAdmin = new()
+            {
+                Id = userAdminId,
+                Email = userAdminEmail,
+                UserName = userAdminEmail,
+                NormalizedUserName = userAdminEmail,
+                PasswordHash = password.HashPassword(null, "Admin123!")
+            };
+
+            //modelBuilder.Entity<IdentityUser>()
+            //    .HasData(userAdmin);
+            //modelBuilder.Entity<IdentityRole>()
+            //    .HasData(adminRole);
+            //modelBuilder.Entity<IdentityUserClaim<string>>()
+            //    .HasData(new IdentityUserClaim<string>()
+            //    {
+            //        Id = 1,
+            //        UserId = userAdminId,
+            //        ClaimType = ClaimTypes.Role,
+            //        ClaimValue = "Admin"
+            //    });
+
             GeometryFactory geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
             modelBuilder.Entity<Cinema>()
                 .HasData(new List<Cinema>

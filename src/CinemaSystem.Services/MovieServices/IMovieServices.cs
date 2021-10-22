@@ -9,6 +9,7 @@ namespace CinemaSystem.Services.MovieServices
     public interface IMovieServices
     {
         Task DeleteByIdAsync(int id);
+        Task<bool> ExistsMovieAsync(int movieId);
         Task<MovieDetailsDto> GetByIdAsync(int id);
         Task UpdateAsync(int id, MovieCreateUpdateDto dto);
         Task<MovieDto> CreateAsync(MovieCreateUpdateDto dto);
