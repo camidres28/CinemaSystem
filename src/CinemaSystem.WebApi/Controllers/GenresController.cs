@@ -67,18 +67,30 @@ namespace CinemaSystem.WebApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, [FromBody] GenreCreateUpdateDto dto)
         {
-            await this.genreServices.UpdateAsync(id, dto);
-
-            return NoContent();
+            bool result = await this.genreServices.UpdateAsync(id, dto);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         // DELETE api/<GenresController>/5
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            await this.genreServices.DeleteByIdAsync(id);
-
-            return NoContent();
+            bool result = await this.genreServices.DeleteByIdAsync(id);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [HttpPatch("{id:int}")]

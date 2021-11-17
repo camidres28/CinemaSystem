@@ -50,9 +50,9 @@ namespace CinemaSystem.Services.ActorServices
             return actorDto;
         }
 
-        public async Task DeleteByIdAsync(int id)
+        public async Task<bool> DeleteByIdAsync(int id)
         {
-            await this.DeleteByIdAsync<Actor>(id);
+            return await this.DeleteByIdAsync<Actor>(id);
         }
 
         public async Task<IEnumerable<ActorDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
@@ -78,8 +78,9 @@ namespace CinemaSystem.Services.ActorServices
             return null;
         }
 
-        public async Task UpdateAsync(int id, ActorCreateUpdateDto dto)
+        public async Task<bool> UpdateAsync(int id, ActorCreateUpdateDto dto)
         {
+            bool result = false;
             Actor entity = await this.dbContext.Actors.FirstOrDefaultAsync(x => x.Id == id);
             if (entity != null)
             {
@@ -96,7 +97,10 @@ namespace CinemaSystem.Services.ActorServices
                 //this.context.Entry(entity).State = EntityState.Modified;
                 //this.context.Actors.Update(entity);
                 await this.dbContext.SaveChangesAsync();
+                result = true;
             }
+
+            return result;
         }
     }
 }

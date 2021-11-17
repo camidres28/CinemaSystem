@@ -48,14 +48,18 @@ namespace CinemaSystem.Services
             return dto;
         }
 
-        protected async Task DeleteByIdAsync<TEntity>(int id) where TEntity : class, IId, new()
+        protected async Task<bool> DeleteByIdAsync<TEntity>(int id) where TEntity : class, IId, new()
         {
+            bool result = false;
             bool exists = await this.dbContext.Set<TEntity>().AnyAsync(x => x.Id == id);
             if (exists)
             {
                 this.dbContext.Remove(new TEntity() { Id = id });
                 await this.dbContext.SaveChangesAsync();
+                result = true; 
             }
+
+            return result;
         }
 
         protected async Task<TReadingDto> CreateAsync<TEntity, TReadingDto, TCreation>(TCreation dto)
@@ -70,9 +74,10 @@ namespace CinemaSystem.Services
             return readingDto;
         }
 
-        protected async Task UpdateAsync<TEntity, TUpdate>(int id, TUpdate dto)
+        protected async Task<bool> UpdateAsync<TEntity, TUpdate>(int id, TUpdate dto)
             where TEntity:class, IId
         {
+            bool result = false;
             bool exists = await this.dbContext.Set<TEntity>().AnyAsync(x => x.Id == id);
             if (exists)
             {
@@ -80,7 +85,10 @@ namespace CinemaSystem.Services
                 entity.Id = id;
                 this.dbContext.Entry(entity).State = EntityState.Modified;
                 await this.dbContext.SaveChangesAsync();
+                result = true;
             }
+
+            return result;
         }
     }
 }

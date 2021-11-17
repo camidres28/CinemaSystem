@@ -11,7 +11,7 @@ namespace CinemaSystem.Services.GenreServices
         Task<GenreDto> CreateAsync(GenreCreateUpdateDto dto);
         Task<IEnumerable<GenreDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto);
         Task<GenreDto> GetByIdAsync(int id);
-        Task UpdateAsync(int id, GenreCreateUpdateDto dto);
-        Task DeleteByIdAsync(int id);
+        Task<bool> UpdateAsync(int id, GenreCreateUpdateDto dto);
+        Task<bool> DeleteByIdAsync(int id);
     }
 }

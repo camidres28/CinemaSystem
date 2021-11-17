@@ -35,9 +35,9 @@ namespace CinemaSystem.Services.CinemaServices
             return cinemaDto;
         }
 
-        public async Task DeleteByIdAsync(int id)
+        public async Task<bool> DeleteByIdAsync(int id)
         {
-            await this.DeleteByIdAsync<Cinema>(id);
+            return await this.DeleteByIdAsync<Cinema>(id);
         }
 
         public async Task<IEnumerable<CinemaDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
@@ -62,8 +62,9 @@ namespace CinemaSystem.Services.CinemaServices
             return dto;
         }
 
-        public async Task UpdateAsync(int id, CinemaCreationUpdateDto dto)
+        public async Task<bool> UpdateAsync(int id, CinemaCreationUpdateDto dto)
         {
+            bool result = false;
             Cinema entity = await this.dbContext.Cinemas
                 .Include(x => x.MoviesCinemas).ThenInclude(x => x.Movie)
                 .FirstOrDefaultAsync(x => x.Id == id);
@@ -73,7 +74,10 @@ namespace CinemaSystem.Services.CinemaServices
                 entity = this.mapper.Map(dto, entity);
                 this.dbContext.Cinemas.Update(entity);
                 await this.dbContext.SaveChangesAsync();
+                result = true;
             }
+
+            return result;
         }
 
         public async Task<IEnumerable<CinemaNearbyDto>> GetNearby(CinemaNearbyFilterDto dto)

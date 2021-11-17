@@ -11,7 +11,7 @@ namespace CinemaSystem.Services.ActorServices
         Task<ActorDto> CreateAsync(ActorCreateUpdateDto dto);
         Task<IEnumerable<ActorDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto);
         Task<ActorDetailsDto> GetByIdAsync(int id);
-        Task UpdateAsync(int id, ActorCreateUpdateDto dto);
-        Task DeleteByIdAsync(int id);
+        Task<bool> UpdateAsync(int id, ActorCreateUpdateDto dto);
+        Task<bool> DeleteByIdAsync(int id);
     }
 }

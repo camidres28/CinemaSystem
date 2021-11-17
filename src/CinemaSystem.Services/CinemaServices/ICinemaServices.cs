@@ -9,9 +9,9 @@ namespace CinemaSystem.Services.CinemaServices
 {
     public interface ICinemaServices
     {
-        Task DeleteByIdAsync(int id);
+        Task<bool> DeleteByIdAsync(int id);
         Task<CinemaDetailsDto> GetByIdAsync(int id);
-        Task UpdateAsync(int id, CinemaCreationUpdateDto dto);
+        Task<bool> UpdateAsync(int id, CinemaCreationUpdateDto dto);
         Task<CinemaDto> CreateAsync(CinemaCreationUpdateDto dto);
         Task<IEnumerable<CinemaNearbyDto>> GetNearby(CinemaNearbyFilterDto dto);
         Task<IEnumerable<CinemaDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto);

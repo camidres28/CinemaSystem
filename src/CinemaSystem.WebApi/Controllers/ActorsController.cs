@@ -18,7 +18,7 @@ namespace CinemaSystem.WebApi.Controllers
     public class ActorsController : CustomControllerBase
     {
         private readonly IActorServices actorServices;
-        
+
         public ActorsController(IActorServices actorServices,
             ApplicationDbContext dbContext,
             IMapper mapper)
@@ -70,22 +70,34 @@ namespace CinemaSystem.WebApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, [FromForm] ActorCreateUpdateDto dto)
         {
-            await this.actorServices.UpdateAsync(id, dto);
-
-            return NoContent();
+            bool result = await this.actorServices.UpdateAsync(id, dto);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         // DELETE api/<ActorsController>/5
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            await this.actorServices.DeleteByIdAsync(id);
-
-            return NoContent();
+            bool result = await this.actorServices.DeleteByIdAsync(id);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [HttpPatch("{id:int}")]
-        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorBaseDto> patchDocument)            
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorBaseDto> patchDocument)
         {
             ActionResult result = await this.Patch<Actor, ActorBaseDto>(id, patchDocument);
 

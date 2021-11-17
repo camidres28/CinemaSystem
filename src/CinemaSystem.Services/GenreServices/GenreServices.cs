@@ -23,9 +23,9 @@ namespace CinemaSystem.Services.GenreServices
             return genreDto;
         }
 
-        public async Task DeleteByIdAsync(int id)
+        public async Task<bool> DeleteByIdAsync(int id)
         {
-            await this.DeleteByIdAsync<Genre>(id);
+            return await this.DeleteByIdAsync<Genre>(id);
         }
 
         public async Task<IEnumerable<GenreDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
@@ -42,9 +42,9 @@ namespace CinemaSystem.Services.GenreServices
             return dto;
         }
 
-        public async Task UpdateAsync(int id, GenreCreateUpdateDto dto)
+        public async Task<bool> UpdateAsync(int id, GenreCreateUpdateDto dto)
         {
-            await this.UpdateAsync<Genre, GenreCreateUpdateDto>(id, dto);
+            return await this.UpdateAsync<Genre, GenreCreateUpdateDto>(id, dto);
         }
     }
 }

@@ -64,9 +64,9 @@ namespace CinemaSystem.Services.MovieServices
             return movieDto;
         }
 
-        public async Task DeleteByIdAsync(int id)
+        public async Task<bool> DeleteByIdAsync(int id)
         {
-            await this.DeleteByIdAsync<Movie>(id);
+            return await this.DeleteByIdAsync<Movie>(id);
         }
 
         public async Task<IEnumerable<MovieDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto)
@@ -137,8 +137,9 @@ namespace CinemaSystem.Services.MovieServices
             return dto;
         }
 
-        public async Task UpdateAsync(int id, MovieCreateUpdateDto dto)
+        public async Task<bool> UpdateAsync(int id, MovieCreateUpdateDto dto)
         {
+            bool result = false;
             Movie entity = await this.dbContext.Movies
                 .Include(x => x.MoviesActors)
                 .Include(x => x.MoviesGenres)
@@ -160,7 +161,10 @@ namespace CinemaSystem.Services.MovieServices
                 this.AsigningOrderToActors(entity);
                 this.dbContext.Entry(entity).State = EntityState.Modified;
                 await this.dbContext.SaveChangesAsync();
+                result = true;
             }
+
+            return result;
         }
 
 

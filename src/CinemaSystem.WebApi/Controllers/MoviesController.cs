@@ -82,18 +82,30 @@ namespace CinemaSystem.WebApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, [FromForm] MovieCreateUpdateDto dto)
         {
-            await this.movieServices.UpdateAsync(id, dto);
-
-            return NoContent();
+            bool result = await this.movieServices.UpdateAsync(id, dto);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         // DELETE api/<MoviesController>/5
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            await this.movieServices.DeleteByIdAsync(id);
-
-            return NoContent();
+            bool result = await this.movieServices.DeleteByIdAsync(id);
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [HttpPatch("{id:int}")]
