@@ -9,6 +9,7 @@ namespace CinemaSystem.UnitTests.ServicesTests
 {
     public class BaseServicesTests
     {
+        public GeometryFactory GeometryFactory { get => NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326); }
         protected ApplicationDbContext BuildContext(string dbName)
         {
             DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -23,8 +24,7 @@ namespace CinemaSystem.UnitTests.ServicesTests
         {
             var config = new MapperConfiguration(options => 
             {
-                GeometryFactory geometry = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-                options.AddProfile(new AutoMapperProfileServices(geometry));
+                options.AddProfile(new AutoMapperProfileServices(this.GeometryFactory));
             });
 
             return config.CreateMapper();
