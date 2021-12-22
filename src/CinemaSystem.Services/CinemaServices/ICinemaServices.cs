@@ -13,7 +13,7 @@ namespace CinemaSystem.Services.CinemaServices
         Task<CinemaDetailsDto> GetByIdAsync(int id);
         Task<bool> UpdateAsync(int id, CinemaCreationUpdateDto dto);
         Task<CinemaDto> CreateAsync(CinemaCreationUpdateDto dto);
-        Task<IEnumerable<CinemaNearbyDto>> GetNearby(CinemaNearbyFilterDto dto);
+        Task<IEnumerable<CinemaNearbyDto>> GetNearbyAsync(CinemaNearbyFilterDto dto);
         Task<IEnumerable<CinemaDto>> GetAllAsync(HttpContext httpContext, PaginationDto paginationDto);
     }
 }

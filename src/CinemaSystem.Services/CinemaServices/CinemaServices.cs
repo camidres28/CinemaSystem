@@ -80,7 +80,7 @@ namespace CinemaSystem.Services.CinemaServices
             return result;
         }
 
-        public async Task<IEnumerable<CinemaNearbyDto>> GetNearby(CinemaNearbyFilterDto dto)
+        public async Task<IEnumerable<CinemaNearbyDto>> GetNearbyAsync(CinemaNearbyFilterDto dto)
         {
             Point userLocation = this.geometryFactory.CreatePoint(new Coordinate(dto.Longitude, dto.Latitude));
             IEnumerable<CinemaNearbyDto> dtos = await this.dbContext.Cinemas                

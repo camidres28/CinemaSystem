@@ -5,7 +5,6 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 
 namespace CinemaSystem.Models.Entities
 {

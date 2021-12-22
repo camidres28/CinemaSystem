@@ -6,7 +6,6 @@ using CinemaSystem.Services.CinemaServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,16 +30,16 @@ namespace CinemaSystem.UnitTests.ServicesTests
             CinemaCreationUpdateDto dto1 = new()
             {
                 Name = "CC Unico Outlet - Pasto",
-                Latitude = -77.26046462525754d,
-                Longitude = 1.2055371680316427
+                Latitude = 1.2055371680316427,
+                Longitude = -77.26046462525754
             };
 
             //1.2169715540261588, -77.28860043409382
             CinemaCreationUpdateDto dto2 = new()
             {
                 Name = "CC Unicentro - Pasto",
-                Latitude = -77.28860043409382,
-                Longitude = 1.2169715540261588
+                Latitude = 1.2169715540261588,
+                Longitude = -77.28860043409382
             };
 
             //Execution:
@@ -69,8 +68,8 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unico Outlet - Pasto",
-                    Latitude = -77.26046462525754d,
-                    Longitude = 1.2055371680316427
+                    Latitude = 1.2055371680316427,
+                    Longitude = -77.26046462525754
                 });
             dbContext1.Cinemas.Add(entity1);
 
@@ -78,8 +77,8 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unicentro - Pasto",
-                    Latitude = -77.28860043409382,
-                    Longitude = 1.2169715540261588
+                    Latitude = 1.2169715540261588,
+                    Longitude = -77.28860043409382
                 });
 
             dbContext1.Cinemas.Add(entity2);
@@ -87,8 +86,8 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = "Cinemas Valle de Atriz",
-                    Latitude = -77.28606410384705,
-                    Longitude = 1.2273724847208618
+                    Latitude = 1.2273724847208618,
+                    Longitude = -77.28606410384705
                 });
             dbContext1.Cinemas.Add(entity3);
 
@@ -104,22 +103,26 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 RegistersPerPageQuantity = 50
             };
 
-            Mock<HttpRequest> httpRequestMoq = new();
-            httpRequestMoq.Setup(x => x.Scheme).Returns("https");
-            httpRequestMoq.Setup(x => x.Host).Returns(HostString.FromUriComponent("https://localhost:8080"));
-            httpRequestMoq.Setup(x => x.PathBase).Returns(PathString.FromUriComponent("/api"));
+            //Moking a HttpContext:
+            //Mock<HttpRequest> httpRequestMoq = new();
+            //httpRequestMoq.Setup(x => x.Scheme).Returns("https");
+            //httpRequestMoq.Setup(x => x.Host).Returns(HostString.FromUriComponent("https://localhost:8080"));
+            //httpRequestMoq.Setup(x => x.PathBase).Returns(PathString.FromUriComponent("/api"));
 
-            Mock<HttpResponse> httpResponseMoq = new(MockBehavior.Default);
-            Mock<IHeaderDictionary> headers = new();
-            httpResponseMoq.Setup(x => x.Headers).Returns(headers.Object);
+            //Mock<HttpResponse> httpResponseMoq = new(MockBehavior.Default);
+            //Mock<IHeaderDictionary> headers = new();
+            //httpResponseMoq.Setup(x => x.Headers).Returns(headers.Object);
 
-            Mock<HttpContext> httpContextMoq = new();
-            httpContextMoq.Setup(x => x.Request).Returns(httpRequestMoq.Object);
-            httpContextMoq.Setup(x => x.Response).Returns(httpResponseMoq.Object);
+            //Mock<HttpContext> httpContextMoq = new();
+            //httpContextMoq.Setup(x => x.Request).Returns(httpRequestMoq.Object);
+            //httpContextMoq.Setup(x => x.Response).Returns(httpResponseMoq.Object);
+
+            //Providing a default HttpContext 
+            HttpContext httpContext = new DefaultHttpContext();
 
             //Execution:
             ApplicationDbContext dbContext2 = this.BuildContext(dbName);
-            IEnumerable<CinemaDto> cinemaDtos = await cinemaServices.GetAllAsync(httpContextMoq.Object, paginationDto);
+            IEnumerable<CinemaDto> cinemaDtos = await cinemaServices.GetAllAsync(httpContext, paginationDto);
 
             //Verification:
             Assert.AreEqual(countEntities, cinemaDtos.Count());
@@ -137,16 +140,16 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unico Outlet - Pasto",
-                    Latitude = -77.26046462525754d,
-                    Longitude = 1.2055371680316427
+                    Latitude = 1.2055371680316427,
+                    Longitude = -77.26046462525754
                 });
 
             Cinema entity2 = mapper.Map<Cinema>(
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unicentro - Pasto",
-                    Latitude = -77.28860043409382,
-                    Longitude = 1.2169715540261588
+                    Latitude = 1.2169715540261588,
+                    Longitude = -77.28860043409382
                 });
 
             dbContext1.Cinemas.Add(entity1);
@@ -183,16 +186,16 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unico Outlet - Pasto",
-                    Latitude = -77.26046462525754d,
-                    Longitude = 1.2055371680316427
+                    Latitude = 1.2055371680316427,
+                    Longitude = -77.26046462525754d
                 });
 
             Cinema entity2 = mapper.Map<Cinema>(
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unicentro - Pasto",
-                    Latitude = -77.28860043409382,
-                    Longitude = 1.2169715540261588
+                    Latitude = 1.2169715540261588,
+                    Longitude = -77.28860043409382
                 });
 
             dbContext1.Cinemas.Add(entity1);
@@ -229,16 +232,16 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unico Outlet - Pasto",
-                    Latitude = -77.26046462525754d,
-                    Longitude = 1.2055371680316427
+                    Latitude = 1.2055371680316427,
+                    Longitude = -77.26046462525754d
                 });
 
             Cinema entity2 = mapper.Map<Cinema>(
                 new CinemaCreationUpdateDto()
                 {
                     Name = "CC Unicentro - Pasto",
-                    Latitude = -77.28860043409382,
-                    Longitude = 1.2169715540261588
+                    Latitude = 1.2169715540261588,
+                    Longitude = -77.28860043409382
                 });
 
             dbContext1.Cinemas.Add(entity1);
@@ -260,16 +263,16 @@ namespace CinemaSystem.UnitTests.ServicesTests
                 new CinemaCreationUpdateDto()
                 {
                     Name = name1,
-                    Latitude = -77.26046462525754d,
-                    Longitude = 1.2055371680316427
+                    Latitude = 1.2055371680316427,
+                    Longitude = -77.26046462525754d
                 });
 
             bool result2 = await cinemaServices.UpdateAsync(secondIndex,
                 new CinemaCreationUpdateDto()
                 {
                     Name = name2,
-                    Latitude = -77.28860043409382,
-                    Longitude = 1.2169715540261588
+                    Latitude = 1.2169715540261588,
+                    Longitude = -77.28860043409382
                 });
 
             CinemaDetailsDto cinemaDto1 = await cinemaServices.GetByIdAsync(firstIndex);
@@ -280,6 +283,41 @@ namespace CinemaSystem.UnitTests.ServicesTests
             Assert.IsTrue(result2);
             Assert.AreEqual(name1, cinemaDto1.Name);
             Assert.AreEqual(name2, cinemaDto2.Name);
+        }
+
+        [TestMethod]
+        public async Task GetNearbyTest()
+        {
+            //Preparation:          
+
+            CinemaNearbyFilterDto nearbyFilterDto1 = new()
+            {
+                DistanceKm = 1,
+                Latitude = 1.2031023515938222d,
+                Longitude = -77.25549056647624d
+            };
+
+            CinemaNearbyFilterDto nearbyFilterDto2 = new()
+            {
+                DistanceKm = 5,
+                Latitude = 1.2031023515938222d,
+                Longitude = -77.25549056647624d
+            };
+
+            using (ApplicationDbContext context = LocalDbDatabaseInitializer.GetDbContextLocalDb(false))
+            {
+                //It is being used the data stored in the database.
+                IMapper mapper = this.SeetingAutoMapper();
+                ICinemaServices cinemaServices = new CinemaServices(context, mapper, this.GeometryFactory);
+
+                //Execution:
+                IEnumerable<CinemaNearbyDto> nearbyDtos1 = await cinemaServices.GetNearbyAsync(nearbyFilterDto1);
+                IEnumerable<CinemaNearbyDto> nearbyDtos2 = await cinemaServices.GetNearbyAsync(nearbyFilterDto2);
+
+                //Verification
+                Assert.AreEqual(1, nearbyDtos1.Count());
+                Assert.AreEqual(2, nearbyDtos2.Count());
+            }
         }
     }
 }

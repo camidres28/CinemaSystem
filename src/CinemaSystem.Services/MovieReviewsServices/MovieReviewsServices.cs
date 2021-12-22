@@ -3,6 +3,7 @@ using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Reviews;
 using CinemaSystem.Models.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,8 +71,16 @@ namespace CinemaSystem.Services.MovieReviewsServices
                 await this.dbContext.Reviews.AddAsync(entity);
                 await this.dbContext.SaveChangesAsync();
 
-                entity = await this.dbContext.Reviews.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == entity.Id);
-                reviewReadingDto = this.mapper.Map<ReviewReadingDto>(entity);
+                //Review review = await this.dbContext.Reviews.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == entity.Id);
+                Review review = await this.dbContext.Reviews.FirstOrDefaultAsync(x => x.Id == entity.Id);
+                IdentityUser user = await this.dbContext.Users.SingleOrDefaultAsync(x => x.Id == entity.UserId);
+
+                if (user != null)
+                {
+                    review.User = user;
+                }
+
+                reviewReadingDto = this.mapper.Map<ReviewReadingDto>(review);
             }
 
             return reviewReadingDto;

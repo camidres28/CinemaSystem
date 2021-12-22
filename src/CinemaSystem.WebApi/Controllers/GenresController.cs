@@ -3,6 +3,8 @@ using CinemaSystem.Models.DTOs;
 using CinemaSystem.Models.DTOs.Genres;
 using CinemaSystem.Models.Entities;
 using CinemaSystem.Services.GenreServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -80,6 +82,7 @@ namespace CinemaSystem.WebApi.Controllers
 
         // DELETE api/<GenresController>/5
         [HttpDelete("{id:int}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             bool result = await this.genreServices.DeleteByIdAsync(id);

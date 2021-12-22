@@ -84,12 +84,12 @@ namespace CinemaSystem.Services.MovieServices
                 queryable = queryable.Where(x => x.Title.Contains(dto.Title));
             }
 
-            if (dto.OnCinema)
+            if (dto.OnCinema.HasValue)
             {
-                queryable = queryable.Where(x => x.IsOnCinema);
+                queryable = queryable.Where(x => x.IsOnCinema == dto.OnCinema);
             }
 
-            if (dto.FutureReleases)
+            if (dto.FutureReleases.HasValue)
             {
                 DateTimeOffset today = new DateTimeOffset(DateTime.Now);
                 queryable = queryable.Where(x => x.ReleaseDate > today);

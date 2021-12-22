@@ -39,7 +39,7 @@ namespace CinemaSystem.WebApi.Controllers
         [HttpGet("nearby")]
         public async Task<ActionResult<IEnumerable<CinemaNearbyDto>>> Get([FromQuery] CinemaNearbyFilterDto dto)
         {
-            IEnumerable<CinemaNearbyDto> cinemas = await this.cinemaServices.GetNearby(dto);
+            IEnumerable<CinemaNearbyDto> cinemas = await this.cinemaServices.GetNearbyAsync(dto);
             if (cinemas != null)
             {
                 return Ok(cinemas);
