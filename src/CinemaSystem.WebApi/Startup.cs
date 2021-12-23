@@ -8,6 +8,7 @@ using CinemaSystem.Services.MovieReviewsServices;
 using CinemaSystem.Services.MovieServices;
 using CinemaSystem.Services.StorageServices;
 using CinemaSystem.WebApi.CustomFilters;
+using CinemaSystem.WebApi.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -60,7 +61,11 @@ namespace CinemaSystem.WebApi
                 options => options.UseSqlServer(this.Configuration.GetConnectionString("DefaultConnection"),
                 sqlServerOptions => sqlServerOptions.UseNetTopologySuite())
                 );
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddControllers(options=>
+            {
+                options.Filters.Add(typeof(ErrorsFilter));
+            }).AddNewtonsoftJson();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CinemaSystem.WebApi", Version = "v1" });
@@ -84,6 +89,7 @@ namespace CinemaSystem.WebApi
                     ClockSkew = System.TimeSpan.Zero
                 }
                 );
+            services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
