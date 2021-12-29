@@ -39,7 +39,11 @@ namespace CinemaSystem.WebApi.Controllers
 
             return NoContent();
         }
-
+        /// <summary>
+        /// Return a specific actor by its id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // GET api/<ActorsController>/5
         [HttpGet("{id:int}", Name = "GetActorById")]
         public async Task<ActionResult<ActorDto>> Get(int id)
